@@ -24,8 +24,8 @@ executing
 faiss-cpu==1.7.4
 fastjsonschema
 filelock==3.12.0
-Flask==2.3.2
-Flask-Cors==3.0.10
+Flask
+Flask-Cors
 fonttools==4.39.4
 fsspec==2023.5.0
 gunicorn==20.1.0
