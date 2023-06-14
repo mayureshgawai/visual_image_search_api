@@ -17,6 +17,12 @@ st = Search_Setup(image_list=image_list, model_name='vgg19', pretrained=True, im
 st.run_index()
 metadata = st.get_image_metadata_file()
 
+
+@app.route("/", methods=['GET', 'POST'])
+@cross_origin()
+def index():
+    return "Hello world"
+
 @app.route('/sendImage', methods=['GET', 'POST'])
 @cross_origin()
 def sendImage():
@@ -42,6 +48,23 @@ def sendImage():
 
     except Exception as e:
         pass
+
+@app.route("/addIndex", methods=['GET', 'POST'])
+@cross_origin()
+def addIndex():
+    img_url = request.json["image_url"]
+    response = req.urlopen(img_url)
+    image_array = np.asarray(bytearray(response.read()), dtype=np.uint8)
+    image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+
+    random_id = uuid.uuid4()
+    name = "image_"+str(random_id)+".jpg"
+    path = os.path.join("temp_data", name)
+    cv2.imwrite(path, image)
+
+    st.add_images_to_index([path])
+
+    return "Done!"
 
 if __name__ == '__main__':
     app.run()
