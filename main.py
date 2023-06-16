@@ -1,19 +1,17 @@
-from DeepImageSearch import Load_Data, Search_Setup
+# from DeepImageSearch import Load_Data, Search_Setup
+from DIS.DeepImageSearch import DeepImageSearch as dis
 from flask import Flask, request, jsonify
-from flask import render_template
-from flask_cors import CORS, cross_origin
-import matplotlib.pyplot as plt
+from flask_cors import cross_origin
 import urllib.request as req
 import numpy as np
-from PIL import Image
 import cv2
 import uuid
 import os
 
 app = Flask(__name__)
 
-image_list = Load_Data().from_folder(['image_data'])  # define any folder in image_list (it may don't even exist)
-st = Search_Setup(image_list=image_list, model_name='vgg19', pretrained=True, image_count=162)
+image_list = dis.Load_Data().from_folder(['image_data'])  # define any folder in image_list (it may don't even exist)
+st = dis.Search_Setup(image_list=image_list, model_name='vgg19', pretrained=True, image_count=162)
 st.run_index()
 metadata = st.get_image_metadata_file()
 
@@ -41,9 +39,17 @@ def sendImage():
         # plt.imsave(path, image_array)
 
         ids = []
-        for key, val in st.get_similar_images(image_path=path, number_of_images=10).items():
-            ids.append(val.split("\\")[-1].split(".")[0])
+        # for key, val in st.get_similar_images(image_path=path, number_of_images=10).items():
+        #     ids.append(val.split("\\")[-1].split(".")[0])
+        d, items = st.get_similar_images(image_path=path, number_of_images=10)
+        
+        for dist, item in zip(d[0], items):
+            if(dist < 0.50):
+                # data[item] = items[item]
+                ids.append(items[item].split("\\")[-1].split(".")[0])
 
+        os.remove(path)
+        
         return jsonify({"list": ids})
 
     except Exception as e:
@@ -63,6 +69,7 @@ def addIndex():
     cv2.imwrite(path, image)
 
     st.add_images_to_index([path])
+    os.remove(path)
 
     return "Done!"
 
